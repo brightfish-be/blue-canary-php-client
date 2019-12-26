@@ -10,7 +10,14 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Blue Canary logger client.
- *
+ * @method PromiseInterface emergencyAsync(string $message = '', array $parameters = [])
+ * @method PromiseInterface alertAsync(string $message = '', array $parameters = [])
+ * @method PromiseInterface criticalAsync(string $message = '', array $parameters = [])
+ * @method PromiseInterface warningAsync(string $message = '', array $parameters = [])
+ * @method PromiseInterface errorAsync(string $message = '', array $parameters = [])
+ * @method PromiseInterface noticeAsync(string $message = '', array $parameters = [])
+ * @method PromiseInterface infoAsync(string $message = '', array $parameters = [])
+ * @method PromiseInterface okAsync(string $message = '', array $parameters = [])
  * @copyright 2019 Brightfish
  * @author Arnaud Coolsaet <a.coolsaet@brightfish.be>
  */
@@ -140,7 +147,7 @@ class Logger extends Client implements LoggerInterface
      * @return void
      * @throws BlueCanaryException
      */
-    public function debug($message, array $parameters = [])
+    public function debug($message = '', array $parameters = [])
     {
         throw new BlueCanaryException('This method is currently not supported');
     }
@@ -154,7 +161,7 @@ class Logger extends Client implements LoggerInterface
      * @throws InvalidArgumentException
      * @throws BlueCanaryException
      */
-    public function log($level, $message, array $parameters = [])
+    public function log($level, $message = '', array $parameters = [])
     {
         if (is_numeric($level)) {
             $level = array_flip(self::LEVELS)[$level];

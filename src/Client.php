@@ -52,7 +52,7 @@ class Client
     protected $metrics = [];
 
     /**
-     * Client constructor
+     * Merge parameters with default, set initial uri parts.
      * @param BaseClient $guzzle
      * @param array $parameters
      */
@@ -75,11 +75,14 @@ class Client
     {
         $request = $this->createRequest($parameters);
 
+        $guzzleOptions = $this->extractGuzzleOptions($parameters);
+
         if (empty($parameters['async'])) {
-            return $this->guzzle->send($request);
+            unset($parameters['async']);
+            return $this->guzzle->send($request, $guzzleOptions);
         }
 
-        return $this->guzzle->sendAsync($request);
+        return $this->guzzle->sendAsync($request, $guzzleOptions);
     }
 
     /**
@@ -157,7 +160,7 @@ class Client
     protected function setUri(array $parts): self
     {
         foreach ($this->uri as $key => $value) {
-            $this->uri[$key] = trim(($parts[$key] ?? $value ?? $this->defaults[$key]), '/');
+            $this->uri[$key] = trim($parts[$key] ?? $value ?? $this->defaults[$key], '/');
         }
 
         return $this;
@@ -169,7 +172,7 @@ class Client
      */
     public function getUri(): string
     {
-        $uri = join('/', $this->uri);
+        $uri = implode('/', $this->uri);
 
         return str_replace($this->uri['api_version'], $this->uri['api_version'] . '/events', $uri);
     }
@@ -181,15 +184,21 @@ class Client
      */
     protected function validateUri(): self
     {
-        if (!$this->bcIsUuidValid($this->uri['uuid'])) {
+        foreach ($this->uri as $key => $value) {
+            if (!$value) {
+                throw new BlueCanaryException("A $key is missing.");
+            }
+        }
+
+        if (!$this->isUuidValid($this->uri['uuid'])) {
             throw new BlueCanaryException('The app uuid is invalid.');
         }
 
-        if (!$this->bcIsCounterNameValid($this->uri['counter'])) {
+        if (!$this->isCounterNameValid($this->uri['counter'])) {
             throw new BlueCanaryException('The counter name is invalid.');
         }
 
-        if (strpos($this->uri['base_uri'], 'http') === false) {
+        if (strpos($this->uri['base_uri'], 'http') !== 0) {
             throw new BlueCanaryException('This protocol is not supported.');
         }
 
@@ -201,7 +210,7 @@ class Client
      * @param string $uuid
      * @return bool
      */
-    public function bcIsUuidValid(string $uuid): bool
+    public function isUuidValid(string $uuid): bool
     {
         return preg_match('/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i', $uuid);
     }
@@ -211,7 +220,7 @@ class Client
      * @param string $name
      * @return bool
      */
-    public function bcIsCounterNameValid(string $name): bool
+    public function isCounterNameValid(string $name): bool
     {
         return preg_match('/^[a-z0-9\-_.]{6,255}$/i', $name);
     }
@@ -223,5 +232,15 @@ class Client
     public function getMethod(): string
     {
         return $this->metrics ? 'POST' : 'GET';
+    }
+
+    /**
+     * Distinguish and return the Guzzle options from the given parameter array.
+     * @param array $parameters
+     * @return array
+     */
+    protected function extractGuzzleOptions(array $parameters)
+    {
+        return array_diff_key($parameters, $this->defaults);
     }
 }
