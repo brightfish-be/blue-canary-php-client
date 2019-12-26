@@ -2,7 +2,8 @@
 
 namespace Brightfish\BlueCanaryClient;
 
-use GuzzleHttp\Psr7\Response;
+use Brightfish\BlueCanaryClient\Exceptions\BlueCanaryException;
+use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
@@ -13,28 +14,31 @@ use Psr\Log\LoggerInterface;
  * @copyright 2019 Brightfish
  * @author Arnaud Coolsaet <a.coolsaet@brightfish.be>
  */
-class Logger implements LoggerInterface
+class Logger extends Client implements LoggerInterface
 {
-    const EMERGENCY = 7;
-    const ALERT = 6;
-    const CRITICAL = 5;
-    const ERROR = 4;
-    const WARNING = 3;
-    const NOTICE = 2;
-    const INFO = 1;
-    const OK = 0;
-
-    const DEBUG = 255;
+    /** @var array */
+    const LEVELS = [
+        'emergency' => 7,
+        'alert' => 6,
+        'critical' => 5,
+        'error' => 4,
+        'warning' => 3,
+        'notice' => 2,
+        'info' => 1,
+        'ok' => 0,
+        'debug' => 255,
+    ];
 
     /**
      * System is unusable.
      * @param string $message
      * @param array $parameters
-     * @return ResponseInterface
+     * @return ResponseInterface|PromiseInterface
+     * @throws BlueCanaryException
      */
-    public function emergency($message = '', array $parameters = []): ResponseInterface
+    public function emergency($message = '', array $parameters = [])
     {
-        return new Response();
+        return $this->handleRequest(__FUNCTION__, $message, $parameters);
     }
 
     /**
@@ -43,11 +47,12 @@ class Logger implements LoggerInterface
      * trigger the SMS alerts and wake you up.
      * @param string $message
      * @param array $parameters
-     * @return ResponseInterface
+     * @return ResponseInterface|PromiseInterface
+     * @throws BlueCanaryException
      */
-    public function alert($message = '', array $parameters = []): ResponseInterface
+    public function alert($message = '', array $parameters = [])
     {
-        // TODO: Implement alert() method.
+        return $this->handleRequest(__FUNCTION__, $message, $parameters);
     }
 
     /**
@@ -55,11 +60,12 @@ class Logger implements LoggerInterface
      * Example: Application component unavailable, unexpected exception.
      * @param string $message
      * @param array $parameters
-     * @return ResponseInterface
+     * @return ResponseInterface|PromiseInterface
+     * @throws BlueCanaryException
      */
-    public function critical($message = '', array $parameters = []): ResponseInterface
+    public function critical($message = '', array $parameters = [])
     {
-        // TODO: Implement critical() method.
+        return $this->handleRequest(__FUNCTION__, $message, $parameters);
     }
 
     /**
@@ -67,11 +73,12 @@ class Logger implements LoggerInterface
      * be logged and monitored.
      * @param string $message
      * @param array $parameters
-     * @return ResponseInterface
+     * @return ResponseInterface|PromiseInterface
+     * @throws BlueCanaryException
      */
-    public function error($message = '', array $parameters = []): ResponseInterface
+    public function error($message = '', array $parameters = [])
     {
-        // TODO: Implement error() method.
+        return $this->handleRequest(__FUNCTION__, $message, $parameters);
     }
 
     /**
@@ -80,22 +87,24 @@ class Logger implements LoggerInterface
      * that are not necessarily wrong.
      * @param string $message
      * @param array $parameters
-     * @return ResponseInterface
+     * @return ResponseInterface|PromiseInterface
+     * @throws BlueCanaryException
      */
-    public function warning($message = '', array $parameters = []): ResponseInterface
+    public function warning($message = '', array $parameters = [])
     {
-        // TODO: Implement warning() method.
+        return $this->handleRequest(__FUNCTION__, $message, $parameters);
     }
 
     /**
      * Normal but significant events.
      * @param string $message
      * @param array $parameters
-     * @return ResponseInterface
+     * @return ResponseInterface|PromiseInterface
+     * @throws BlueCanaryException
      */
-    public function notice($message = '', array $parameters = []): ResponseInterface
+    public function notice($message = '', array $parameters = [])
     {
-        // TODO: Implement notice() method.
+        return $this->handleRequest(__FUNCTION__, $message, $parameters);
     }
 
     /**
@@ -103,11 +112,12 @@ class Logger implements LoggerInterface
      * Example: User logs in, SQL logs.
      * @param string $message
      * @param array $parameters
-     * @return ResponseInterface
+     * @return ResponseInterface|PromiseInterface
+     * @throws BlueCanaryException
      */
-    public function info($message = '', array $parameters = []): ResponseInterface
+    public function info($message = '', array $parameters = [])
     {
-        // TODO: Implement info() method.
+        return $this->handleRequest(__FUNCTION__, $message, $parameters);
     }
 
     /**
@@ -115,22 +125,24 @@ class Logger implements LoggerInterface
      * Example: User logs in, SQL logs.
      * @param string $message
      * @param array $parameters
-     * @return ResponseInterface
+     * @return ResponseInterface|PromiseInterface
+     * @throws BlueCanaryException
      */
-    public function ok($message = '', array $parameters = []): ResponseInterface
+    public function ok($message = '', array $parameters = [])
     {
-        // TODO: Implement ok() method.
+        return $this->handleRequest(__FUNCTION__, $message, $parameters);
     }
 
     /**
      * Detailed debug information.
      * @param string $message
      * @param array $parameters
-     * @return ResponseInterface
+     * @return void
+     * @throws BlueCanaryException
      */
-    public function debug($message, array $parameters = []): ResponseInterface
+    public function debug($message, array $parameters = [])
     {
-        // TODO: Implement debug() method.
+        throw new BlueCanaryException('This method is currently not supported');
     }
 
     /**
@@ -138,11 +150,57 @@ class Logger implements LoggerInterface
      * @param mixed $level
      * @param string $message
      * @param array $parameters
-     * @return ResponseInterface
+     * @return ResponseInterface|PromiseInterface
      * @throws InvalidArgumentException
+     * @throws BlueCanaryException
      */
-    public function log($level, $message, array $parameters = []): ResponseInterface
+    public function log($level, $message, array $parameters = [])
     {
-        // TODO: Implement log() method.
+        if (is_numeric($level)) {
+            $level = array_flip(self::LEVELS)[$level];
+        }
+
+        return $this->handleRequest($level, $message, $parameters);
+    }
+
+    /**
+     * Handle all interface-level methods uniformly and perform the request.
+     * @param string $name
+     * @param string $message
+     * @param array $parameters
+     * @return ResponseInterface|PromiseInterface
+     * @throws BlueCanaryException
+     */
+    protected function handleRequest(string $name, string $message, array $parameters)
+    {
+        $parameters = array_merge($parameters, [
+            'status_code' => self::LEVELS[$name],
+            'status_remark' => $message,
+        ]);
+
+        return $this->request($parameters);
+    }
+
+    /**
+     * Allow all interface-level methods to be called as async, eg. `alertAsync`, 'infoAsync'.
+     * @param string $name
+     * @param array $arguments
+     * @return PromiseInterface
+     * @throws BlueCanaryException
+     */
+    public function __call($name, $arguments): PromiseInterface
+    {
+        $method = str_replace('Async', '', $name);
+
+        if (!method_exists($this, $method)) {
+            throw new BlueCanaryException('This method does not exist.');
+        }
+
+        $msg = (string)array_shift($arguments);
+        $parameters = (array)array_shift($arguments);
+
+        $parameters['async'] = true;
+
+        return $this->$method($msg, $parameters);
     }
 }
