@@ -2,7 +2,8 @@
 
 namespace Brightfish\BlueCanaryClient;
 
-use Brightfish\BlueCanaryClient\Exceptions\BlueCanaryException;
+use Brightfish\BlueCanaryClient\Exceptions\ClientException;
+use Brightfish\BlueCanaryClient\Exceptions\MetricException;
 use GuzzleHttp\Client as BaseClient;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\RequestInterface;
@@ -30,7 +31,7 @@ class Client
     ];
 
     /** @var array */
-    protected $allowedParameters = [
+    protected $allowedDataKeys = [
         'client_id', 'client_name', 'status_code', 'status_remark', 'generated_at', 'metrics',
     ];
 
@@ -46,8 +47,8 @@ class Client
     ];
 
     /**
-     * Metrics to be send upon request. This is emptied after each request.
-     * @var array
+     * Metrics to be send upon request - this is emptied after each request.
+     * @var Metric[]
      */
     protected $metrics = [];
 
@@ -66,10 +67,26 @@ class Client
     }
 
     /**
+     * Add a metric for the next request.
+     * @param string|Metric $key
+     * @param float $value
+     * @param string $unit
+     * @param string $cast
+     * @return Client
+     * @throws MetricException
+     */
+    public function metric($key, float $value = 0, ?string $unit = null, string $cast = 'float'): self
+    {
+        $this->metrics[] = $key instanceof Metric ? $key : new Metric($key, $value, $unit, $cast);
+
+        return $this;
+    }
+
+    /**
      * Create a request instance and let Guzzle perform it.
      * @param array $parameters
      * @return \GuzzleHttp\PromiseInterface|ResponseInterface
-     * @throws BlueCanaryException
+     * @throws ClientException
      */
     protected function request(array $parameters)
     {
@@ -77,10 +94,13 @@ class Client
 
         $guzzleOptions = $this->extractGuzzleOptions($parameters);
 
+        $this->clearMetrics();
+
         if (empty($parameters['async'])) {
-            unset($parameters['async']);
             return $this->guzzle->send($request, $guzzleOptions);
         }
+
+        unset($parameters['async']);
 
         return $this->guzzle->sendAsync($request, $guzzleOptions);
     }
@@ -88,7 +108,7 @@ class Client
     /**
      * @param array $parameters
      * @return RequestInterface
-     * @throws BlueCanaryException
+     * @throws ClientException
      */
     private function createRequest(array $parameters): RequestInterface
     {
@@ -123,9 +143,11 @@ class Client
      */
     protected function buildPostBody(array $parameters): string
     {
-        return \GuzzleHttp\json_encode([
-            'form_params' => $this->getParameters($parameters),
-        ]);
+        $parameters['metrics'] = array_map(function (Metric $metric) {
+            return $metric->toArray();
+        }, $this->metrics);
+
+        return \GuzzleHttp\json_encode($this->getParameters($parameters));
     }
 
     /**
@@ -135,15 +157,15 @@ class Client
      */
     public function getParameters(array $parameters): array
     {
-        $parameters = array_intersect_key($parameters, array_flip($this->allowedParameters));
+        $parameters = array_intersect_key($parameters, array_flip($this->allowedDataKeys));
 
         array_walk($parameters, function (&$value, $key) {
             switch ($key) {
                 case 'status_code':
-                    $value = (int)$value ?? 0;
+                    $value = (int)($value ?? 0);
                     break;
                 default:
-                    $value = $value ?? null;
+                    $value = $value ?: null;
                     break;
             }
         });
@@ -174,32 +196,32 @@ class Client
     {
         $uri = implode('/', $this->uri);
 
-        return str_replace($this->uri['api_version'], $this->uri['api_version'] . '/events', $uri);
+        return str_replace($this->uri['api_version'], 'api/' . $this->uri['api_version'] . '/event', $uri);
     }
 
     /**
      * Check if the given url has the required parts present and well formatted.
      * @return Client
-     * @throws BlueCanaryException
+     * @throws ClientException
      */
     protected function validateUri(): self
     {
         foreach ($this->uri as $key => $value) {
             if (!$value) {
-                throw new BlueCanaryException("A $key is missing.");
+                throw new ClientException("A $key is missing.");
             }
         }
 
         if (!$this->isUuidValid($this->uri['uuid'])) {
-            throw new BlueCanaryException('The app uuid is invalid.');
+            throw new ClientException('The app uuid is invalid.');
         }
 
         if (!$this->isCounterNameValid($this->uri['counter'])) {
-            throw new BlueCanaryException('The counter name is invalid.');
+            throw new ClientException('The counter name is invalid.');
         }
 
         if (strpos($this->uri['base_uri'], 'http') !== 0) {
-            throw new BlueCanaryException('This protocol is not supported.');
+            throw new ClientException('This protocol is not supported.');
         }
 
         return $this;
@@ -241,6 +263,26 @@ class Client
      */
     protected function extractGuzzleOptions(array $parameters)
     {
-        return array_diff_key($parameters, $this->defaults);
+        return array_filter($parameters, function ($key) {
+            return !(in_array($key, $this->allowedDataKeys) || isset($this->defaults[$key]));
+        }, ARRAY_FILTER_USE_KEY);
+    }
+
+    /**
+     * Return all currently stashed metrics.
+     * @return Metric[]
+     */
+    public function getMetrics(): array
+    {
+        return $this->metrics;
+    }
+
+    /**
+     * Empty out the metrics array.
+     * @return void
+     */
+    protected function clearMetrics(): void
+    {
+        $this->metrics = [];
     }
 }

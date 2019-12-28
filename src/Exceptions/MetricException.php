@@ -2,6 +2,6 @@
 
 namespace Brightfish\BlueCanaryClient\Exceptions;
 
-class BlueCanaryException extends \Exception
+class MetricException extends \Exception
 {
 }

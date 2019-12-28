@@ -2,7 +2,8 @@
 
 namespace Brightfish\BlueCanaryClient;
 
-use Brightfish\BlueCanaryClient\Exceptions\BlueCanaryException;
+use Brightfish\BlueCanaryClient\Exceptions\ClientException;
+use Brightfish\BlueCanaryClient\Exceptions\LoggerException;
 use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\InvalidArgumentException;
@@ -41,7 +42,7 @@ class Logger extends Client implements LoggerInterface
      * @param string $message
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
-     * @throws BlueCanaryException
+     * @throws ClientException
      */
     public function emergency($message = '', array $parameters = [])
     {
@@ -55,7 +56,7 @@ class Logger extends Client implements LoggerInterface
      * @param string $message
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
-     * @throws BlueCanaryException
+     * @throws ClientException
      */
     public function alert($message = '', array $parameters = [])
     {
@@ -68,7 +69,7 @@ class Logger extends Client implements LoggerInterface
      * @param string $message
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
-     * @throws BlueCanaryException
+     * @throws ClientException
      */
     public function critical($message = '', array $parameters = [])
     {
@@ -81,7 +82,7 @@ class Logger extends Client implements LoggerInterface
      * @param string $message
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
-     * @throws BlueCanaryException
+     * @throws ClientException
      */
     public function error($message = '', array $parameters = [])
     {
@@ -95,7 +96,7 @@ class Logger extends Client implements LoggerInterface
      * @param string $message
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
-     * @throws BlueCanaryException
+     * @throws ClientException
      */
     public function warning($message = '', array $parameters = [])
     {
@@ -107,7 +108,7 @@ class Logger extends Client implements LoggerInterface
      * @param string $message
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
-     * @throws BlueCanaryException
+     * @throws ClientException
      */
     public function notice($message = '', array $parameters = [])
     {
@@ -120,7 +121,7 @@ class Logger extends Client implements LoggerInterface
      * @param string $message
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
-     * @throws BlueCanaryException
+     * @throws ClientException
      */
     public function info($message = '', array $parameters = [])
     {
@@ -133,7 +134,7 @@ class Logger extends Client implements LoggerInterface
      * @param string $message
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
-     * @throws BlueCanaryException
+     * @throws ClientException
      */
     public function ok($message = '', array $parameters = [])
     {
@@ -145,11 +146,11 @@ class Logger extends Client implements LoggerInterface
      * @param string $message
      * @param array $parameters
      * @return void
-     * @throws BlueCanaryException
+     * @throws LoggerException
      */
     public function debug($message = '', array $parameters = [])
     {
-        throw new BlueCanaryException('This method is currently not supported');
+        throw new LoggerException('This method is currently not supported.');
     }
 
     /**
@@ -159,7 +160,7 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws InvalidArgumentException
-     * @throws BlueCanaryException
+     * @throws ClientException
      */
     public function log($level, $message = '', array $parameters = [])
     {
@@ -176,7 +177,7 @@ class Logger extends Client implements LoggerInterface
      * @param string $message
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
-     * @throws BlueCanaryException
+     * @throws ClientException
      */
     protected function handleRequest(string $name, string $message, array $parameters)
     {
@@ -189,18 +190,18 @@ class Logger extends Client implements LoggerInterface
     }
 
     /**
-     * Allow all interface-level methods to be called as async, eg. `alertAsync`, 'infoAsync'.
+     * Allow all interface-level methods can be called as async, eg. `alertAsync`, 'infoAsync'.
      * @param string $name
      * @param array $arguments
      * @return PromiseInterface
-     * @throws BlueCanaryException
+     * @throws LoggerException
      */
     public function __call($name, $arguments): PromiseInterface
     {
         $method = str_replace('Async', '', $name);
 
         if (!method_exists($this, $method)) {
-            throw new BlueCanaryException('This method does not exist.');
+            throw new LoggerException('This method does not exist.');
         }
 
         $msg = (string)array_shift($arguments);
