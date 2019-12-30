@@ -4,7 +4,7 @@ namespace Brightfish\BlueCanaryClient;
 
 use Brightfish\BlueCanaryClient\Exceptions\ClientException;
 use Brightfish\BlueCanaryClient\Exceptions\MetricException;
-use GuzzleHttp\Client as BaseClient;
+use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -17,7 +17,7 @@ use Psr\Http\Message\ResponseInterface;
  */
 class Client
 {
-    /** @var BaseClient */
+    /** @var ClientInterface */
     protected $guzzle;
 
     /** @var array */
@@ -54,10 +54,10 @@ class Client
 
     /**
      * Merge parameters with default, set initial uri parts.
-     * @param BaseClient $guzzle
+     * @param ClientInterface $guzzle
      * @param array $parameters
      */
-    public function __construct(BaseClient $guzzle, array $parameters = [])
+    public function __construct(ClientInterface $guzzle, array $parameters = [])
     {
         $this->guzzle = $guzzle;
 
