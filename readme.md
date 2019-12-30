@@ -7,7 +7,7 @@
 Guzzle-based PHP client for [Blue Canary](https://github.com/brightfish-be/blue-canary-dashboard), 
 monitoring and metrics collection server.
 
-## Usage examples
+## Logger usage examples
 ```
 use Brightfish\BlueCanaryClient\Logger;
 
@@ -42,6 +42,66 @@ $logger->metric('duration', 3465.3567, 'sec', 'int')
 
 // Send OK async 
 $promise = $logger->okAsync();
+```
+
+## Client usage examples
+```
+use Brightfish\BlueCanaryClient\Logger;
+
+$guzzle = new \GuzzleHttp\Client();
+
+$canary = new Client($guzzle, [
+    'base_uri' => 'https://canary.app',
+    'api_version' => 'v1',
+    'counter' => 'default.counter.low',
+    'uuid' => '11111111-b2ac-4ae4-9381-dcd4524dd7e7',
+    'client_id' => 'some-id',
+    'client_name' => 'some-name',
+]);
+
+// Collect multiple metrics without sending yet.
+foreach ([] as $metric) {
+    $canary->metric($metric['key'], $metric['value'], $metric['unit']);
+}
+
+// Send previously collected metrics to a another app/counter than defined globally.
+$canary->post('11111111-b2ac-4ae4-9381-dcd4524dd7e7/new.counter');
+
+// Send one metric to the globally defined app/counter pair,
+// with default OK status code and no message.
+$canary->get(new Metric('throughput', 30.3567, 'fps'));
+
+// Send an async POST request setting the data manually, overriding the globally defined
+// app/counter pair as well as the globally defined client id and name.
+$canary->postAsync('11111111-b2ac-4ae4-9381-dcd4524dd7e7/new.counter', [
+    'client_id' => 'machine-abc',
+    'client_name' => 'Machine I',
+    'status_code' => 0,
+    'status_remark' => 'Info message',
+    'generated_at' => 1576783076,
+    'metrics' => [
+        ['key' => '', 'value' => '', 'unit' => '', 'cast' => ''],
+        ['key' => '', 'value' => '', 'unit' => ''],
+    ]
+]);
+
+// Send an async GET request setting the data manually, overriding the globally defined 
+// client id/name, to another Blue Canary instance, which uses another API version.
+$canary->getAsync([
+    'base_uri' => 'http://canary.org',
+    'api_version' => 'v2',
+    'counter' => 'counter.name',
+    'uuid' => '4524dd7e-b2ac-4ae4-9381-dcd4524dd7e7',
+    'client_id' => 'machine-123',
+    'client_name' => 'Citizen Four',
+    'status_code' => 5,
+    'status_remark' => 'Whoopsie daisy',
+    'generated_at' => 1576783076,
+    'metrics' => [
+        ['key' => '', 'value' => '', 'unit' => ''],
+        ['key' => '', 'value' => '', 'unit' => '', 'cast' => ''],
+    ]
+]);
 ```
 
 ## License
