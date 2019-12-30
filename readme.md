@@ -32,7 +32,7 @@ $logger->emergency('Whoops My App is out again!', [
     'client_name' => 'some-name-2',
 ]);
 
-// Send one metric with message and status code.
+// Send one metric with message and status code, using the global parameters.
 $logger->metric('throughput', 30.3567, 'fps')->warning('Whoops, My App may have troubles!');
 
 // Send two metrics with casting, without message and default OK status code
@@ -45,4 +45,4 @@ $promise = $logger->okAsync();
 ```
 
 ## License
-GNU General Public License (GPL). Please see License File for more information.
+GNU General Public License (GPL). Please see the license file for more information.
