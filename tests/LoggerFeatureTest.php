@@ -19,10 +19,7 @@ class LoggerFeatureTest extends TestCase
 
         $logger->metric('duration', 3465.3567, 'sec', 'int')
             ->metric(new Metric('throughput', 30.3567, 'fps'))
-            ->info('Information metrics', [
-                'client_id' => 'sds',
-                'proet' => 'pfff'
-            ]);
+            ->info('Information metrics');
 
         $req = $this->requestHistory[0]['request'];
         $body = json_decode($req->getBody(), true);
