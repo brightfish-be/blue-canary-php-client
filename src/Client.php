@@ -22,7 +22,7 @@ class Client
 
     /** @var array */
     protected $defaults = [
-        'base_uri' => 'https://canary.test',
+        'base_uri' => 'https://canary.stage',
         'api_version' => 'v1',
         'client_id' => null,
         'client_name' => null,
