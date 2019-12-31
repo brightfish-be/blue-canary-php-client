@@ -1,6 +1,6 @@
 <?php
 
-namespace Brightfish\BlueCanaryClient;
+namespace Brightfish\BlueCanary\Laravel;
 
 /**
  * Laravel service provider.
@@ -8,6 +8,6 @@ namespace Brightfish\BlueCanaryClient;
  * @copyright 2019 Brightfish
  * @author Arnaud Coolsaet <a.coolsaet@brightfish.be>
  */
-class LaravelServiceProvider
+class ServiceProvider
 {
 }

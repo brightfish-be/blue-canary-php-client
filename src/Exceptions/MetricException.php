@@ -1,6 +1,6 @@
 <?php
 
-namespace Brightfish\BlueCanaryClient\Exceptions;
+namespace Brightfish\BlueCanary\Exceptions;
 
 class MetricException extends \Exception
 {

@@ -9,7 +9,7 @@ monitoring and metrics collection server.
 
 ## Usage examples
 ```
-use Brightfish\BlueCanaryClient\Logger;
+use Brightfish\BlueCanary\Logger;
 
 $client = new \GuzzleHttp\Client();
 

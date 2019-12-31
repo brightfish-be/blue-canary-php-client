@@ -1,9 +1,9 @@
 <?php
 
-namespace Brightfish\BlueCanaryClient;
+namespace Brightfish\BlueCanary;
 
-use Brightfish\BlueCanaryClient\Exceptions\ClientException;
-use Brightfish\BlueCanaryClient\Exceptions\MetricException;
+use Brightfish\BlueCanary\Exceptions\ClientException;
+use Brightfish\BlueCanary\Exceptions\MetricException;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\RequestInterface;

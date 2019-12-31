@@ -1,9 +1,9 @@
 <?php
 
-namespace Brightfish\BlueCanaryClient;
+namespace Brightfish\BlueCanary;
 
-use Brightfish\BlueCanaryClient\Exceptions\ClientException;
-use Brightfish\BlueCanaryClient\Exceptions\LoggerException;
+use Brightfish\BlueCanary\Exceptions\ClientException;
+use Brightfish\BlueCanary\Exceptions\LoggerException;
 use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Log\InvalidArgumentException;
@@ -11,6 +11,7 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Blue Canary logger client.
+ *
  * @method PromiseInterface emergencyAsync(string $message = '', array $parameters = [])
  * @method PromiseInterface alertAsync(string $message = '', array $parameters = [])
  * @method PromiseInterface criticalAsync(string $message = '', array $parameters = [])
@@ -19,6 +20,7 @@ use Psr\Log\LoggerInterface;
  * @method PromiseInterface noticeAsync(string $message = '', array $parameters = [])
  * @method PromiseInterface infoAsync(string $message = '', array $parameters = [])
  * @method PromiseInterface okAsync(string $message = '', array $parameters = [])
+ *
  * @copyright 2019 Brightfish
  * @author Arnaud Coolsaet <a.coolsaet@brightfish.be>
  */

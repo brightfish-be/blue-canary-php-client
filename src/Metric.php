@@ -1,8 +1,8 @@
 <?php
 
-namespace Brightfish\BlueCanaryClient;
+namespace Brightfish\BlueCanary;
 
-use Brightfish\BlueCanaryClient\Exceptions\MetricException;
+use Brightfish\BlueCanary\Exceptions\MetricException;
 
 /**
  * Metric class.
