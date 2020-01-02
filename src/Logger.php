@@ -4,9 +4,9 @@ namespace Brightfish\BlueCanary;
 
 use Brightfish\BlueCanary\Exceptions\ClientException;
 use Brightfish\BlueCanary\Exceptions\LoggerException;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise\PromiseInterface;
 use Psr\Http\Message\ResponseInterface;
-use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -28,16 +28,30 @@ class Logger extends Client implements LoggerInterface
 {
     /** @var array */
     const LEVELS = [
-        'emergency' => 7,
-        'alert' => 6,
-        'critical' => 5,
-        'error' => 4,
-        'warning' => 3,
-        'notice' => 2,
-        'info' => 1,
-        'ok' => 0,
-        'debug' => 255,
+        'emergency' => 0,
+        'alert' => 1,
+        'critical' => 2,
+        'error' => 3,
+        'warning' => 4,
+        'notice' => 5,
+        'info' => 6,
+        'debug' => 7,
     ];
+
+    /** @var int */
+    protected $minLevel = 7;
+
+    /**
+     * Determines the minimum level a message must be in order to be logged.
+     * @param string|int $level
+     * @return Logger
+     */
+    public function setLevel($level): self
+    {
+        $this->minLevel = !is_string($level) ? (int)$level : (self::LEVELS[$level] ?? 7);
+
+        return $this;
+    }
 
     /**
      * System is unusable.
@@ -45,6 +59,7 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws ClientException
+     * @throws GuzzleException
      */
     public function emergency($message = '', array $parameters = [])
     {
@@ -59,6 +74,7 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws ClientException
+     * @throws GuzzleException
      */
     public function alert($message = '', array $parameters = [])
     {
@@ -72,6 +88,7 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws ClientException
+     * @throws GuzzleException
      */
     public function critical($message = '', array $parameters = [])
     {
@@ -85,6 +102,7 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws ClientException
+     * @throws GuzzleException
      */
     public function error($message = '', array $parameters = [])
     {
@@ -99,6 +117,7 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws ClientException
+     * @throws GuzzleException
      */
     public function warning($message = '', array $parameters = [])
     {
@@ -111,6 +130,7 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws ClientException
+     * @throws GuzzleException
      */
     public function notice($message = '', array $parameters = [])
     {
@@ -124,21 +144,9 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws ClientException
+     * @throws GuzzleException
      */
     public function info($message = '', array $parameters = [])
-    {
-        return $this->handleRequest(__FUNCTION__, $message, $parameters);
-    }
-
-    /**
-     * Everything went fine, nothing to report.
-     * Example: User logs in, SQL logs.
-     * @param string $message
-     * @param array $parameters
-     * @return ResponseInterface|PromiseInterface
-     * @throws ClientException
-     */
-    public function ok($message = '', array $parameters = [])
     {
         return $this->handleRequest(__FUNCTION__, $message, $parameters);
     }
@@ -161,8 +169,8 @@ class Logger extends Client implements LoggerInterface
      * @param string $message
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
-     * @throws InvalidArgumentException
      * @throws ClientException
+     * @throws GuzzleException
      */
     public function log($level, $message = '', array $parameters = [])
     {
@@ -178,13 +186,18 @@ class Logger extends Client implements LoggerInterface
      * @param string $name
      * @param string $message
      * @param array $parameters
-     * @return ResponseInterface|PromiseInterface
+     * @return ResponseInterface|PromiseInterface|void
      * @throws ClientException
+     * @throws GuzzleException
      */
     protected function handleRequest(string $name, string $message, array $parameters)
     {
+        $level = self::LEVELS[$name];
+
+        if ($this->minLevel < $level) return;
+
         $parameters = array_merge($parameters, [
-            'status_code' => self::LEVELS[$name],
+            'status_code' => $level,
             'status_remark' => $message,
         ]);
 

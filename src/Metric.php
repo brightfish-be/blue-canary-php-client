@@ -28,11 +28,11 @@ class Metric
      * Metric constructor.
      * @param string $key
      * @param float $value
-     * @param string $unit
+     * @param string|null $unit
      * @param string $cast
      * @throws MetricException
      */
-    public function __construct(string $key, float $value, string $unit, string $cast = 'float')
+    public function __construct(string $key, float $value, ?string $unit = null, string $cast = 'float')
     {
         $this->setKey($key);
         $this->setType($cast);

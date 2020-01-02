@@ -5,6 +5,8 @@ namespace Brightfish\BlueCanary;
 use Brightfish\BlueCanary\Exceptions\ClientException;
 use Brightfish\BlueCanary\Exceptions\MetricException;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -22,7 +24,7 @@ class Client
 
     /** @var array */
     protected $defaults = [
-        'base_uri' => 'https://canary.stage',
+        'base_uri' => 'http://canary.stage',
         'api_version' => 'v1',
         'client_id' => null,
         'client_name' => null,
@@ -85,8 +87,9 @@ class Client
     /**
      * Create a request instance and let Guzzle perform it.
      * @param array $parameters
-     * @return \GuzzleHttp\PromiseInterface|ResponseInterface
+     * @return PromiseInterface|ResponseInterface
      * @throws ClientException
+     * @throws GuzzleException
      */
     protected function request(array $parameters)
     {
@@ -123,9 +126,10 @@ class Client
             $uri .= $this->buildGetParameters($parameters);
         } else {
             $body = $this->buildPostBody($parameters);
+            $headers = ['Content-Type' => 'application/json'];
         }
 
-        return new Request($method, $uri, [], $body ?? '');
+        return new Request($method, $uri, $headers ?? [], $body ?? '');
     }
 
     /**

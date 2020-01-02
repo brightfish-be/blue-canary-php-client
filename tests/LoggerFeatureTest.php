@@ -10,6 +10,18 @@ use Tests\TestCase;
 
 class LoggerFeatureTest extends TestCase
 {
+    public function test_min_log_level()
+    {
+        $logger = new Logger($this->guzzle, [
+            'uuid' => '5b8c58e9-b2ac-4ae4-9381-dcd4524dd7e7',
+            'counter' => 'new-counter',
+        ]);
+
+        $r = $logger->setLevel('alert')->info();
+
+        $this->assertTrue($r === null);
+    }
+
     public function test_metrics_and_post_data()
     {
         $logger = new Logger($this->guzzle, [
@@ -25,7 +37,7 @@ class LoggerFeatureTest extends TestCase
         $body = json_decode($req->getBody(), true);
 
         $this->assertEquals('POST', $req->getMethod());
-        $this->assertEquals(1, $body['status_code']);
+        $this->assertEquals(6, $body['status_code']);
         $this->assertEquals('Information metrics', $body['status_remark']);
         $this->assertEquals(3465, $body['metrics'][0]['value']);
         $this->assertEquals('throughput', $body['metrics'][1]['key']);
@@ -65,7 +77,7 @@ class LoggerFeatureTest extends TestCase
 
         $url = (string)$this->requestHistory[0]['request']->getUri();
 
-        $this->assertStringContainsString('client_id=some-id&client_name=some-name&status_code=4&status_remark=Whoopsie+daisy', $url);
+        $this->assertStringContainsString('client_id=some-id&client_name=some-name&status_code=3&status_remark=Whoopsie+daisy', $url);
     }
 
     public function test_async_methods()
@@ -118,6 +130,6 @@ class LoggerFeatureTest extends TestCase
 
         $this->expectException(ClientException::class);
 
-        $logger->ok();
+        $logger->info();
     }
 }

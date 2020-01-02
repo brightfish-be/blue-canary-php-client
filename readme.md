@@ -38,10 +38,10 @@ $logger->metric('throughput', 30.3567, 'fps')->warning('Whoops, my app may have 
 // Send two metrics with casting, without message and default OK status code
 $logger->metric('duration', 3465.3567, 'sec', 'int')
     ->metric(new Metric('throughput', 30.3567, 'fps', 'int'))
-    ->ok();
+    ->info();
 
-// Send OK async 
-$promise = $logger->okAsync();
+// Send INFO async 
+$promise = $logger->infoAsync();
 ```
 
 ## Laravel usage
@@ -53,8 +53,8 @@ BLUE_CANARY_CLIENT_NAME="My client machine"
 2. Reference a custom log driver in `config/logging.php` under `channels`:
 ```
 'canary' => [
-    'driver' => 'single',
-    'via' => Brightfish\BlueCanary\Laravel\CreateCanaryDriver::class,
+    'driver' => 'custom',
+    'via' => Brightfish\BlueCanary\Laravel\LogDriver::class,
     'client_id' => env('BLUE_CANARY_CLIENT_ID'),
     'client_name' => env('BLUE_CANARY_CLIENT_NAME'),
 ],
@@ -67,7 +67,7 @@ Log::emergency('Hello world!', $parameters);
 app('log')->alert('Hello world!', $parameters);
 // With instance
 /** @var Brightfish\BlueCanary\Logger $logger */
-$logger = app('log')->getDriver('canary');
+$logger = app('log')->driver('canary')->getLogger();
 $logger->metric(...)->metric(...)->warning();
 ```
 
