@@ -9,11 +9,11 @@ monitoring and metrics collection server.
 
 ## Usage examples
 ```
-use Brightfish\BlueCanary\Logger;
+use Brightfish\BlueCanary\Client;
 
 $client = new \GuzzleHttp\Client();
 
-$logger = new Logger($client, [
+$logger = new Client($client, [
     'base_uri' => 'https://canary.stage',
     'api_version' => 'v1',
     'uuid' => '5b8c58e9-b2ac-4ae4-9381-dcd4524dd7e7',
@@ -66,8 +66,8 @@ Log::emergency('Hello world!', $parameters);
 // From container
 app('log')->alert('Hello world!', $parameters);
 // With instance
-/** @var Brightfish\BlueCanary\Logger $logger */
-$logger = app('log')->driver('canary')->getLogger();
+/** @var Brightfish\BlueCanary\Client $client */
+$client = app('log')->driver('canary')->getLogger();
 $logger->metric(...)->metric(...)->warning();
 ```
 
