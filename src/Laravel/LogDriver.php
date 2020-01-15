@@ -2,8 +2,8 @@
 
 namespace Brightfish\BlueCanary\Laravel;
 
-use Brightfish\BlueCanary\Logger;
-use GuzzleHttp\Client;
+use Brightfish\BlueCanary\Client;
+use GuzzleHttp\Client as Guzzle;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -34,6 +34,6 @@ class LogDriver
             'counter' => $config['counter'] ?? null,
         ];
 
-        return (new Logger(new Client(), $parameters))->setLevel($level);
+        return (new Client(new Guzzle(), $parameters))->setLevel($level);
     }
 }

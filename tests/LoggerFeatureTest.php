@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use Brightfish\BlueCanary\Exceptions\ClientException;
-use Brightfish\BlueCanary\Logger;
+use Brightfish\BlueCanary\Client;
 use Brightfish\BlueCanary\Metric;
 use GuzzleHttp\Promise\Promise;
 use Tests\TestCase;
@@ -12,7 +12,7 @@ class LoggerFeatureTest extends TestCase
 {
     public function test_min_log_level()
     {
-        $logger = new Logger($this->guzzle, [
+        $logger = new Client($this->guzzle, [
             'uuid' => '5b8c58e9-b2ac-4ae4-9381-dcd4524dd7e7',
             'counter' => 'new-counter',
         ]);
@@ -24,7 +24,7 @@ class LoggerFeatureTest extends TestCase
 
     public function test_metrics_and_post_data()
     {
-        $logger = new Logger($this->guzzle, [
+        $logger = new Client($this->guzzle, [
             'uuid' => '5b8c58e9-b2ac-4ae4-9381-dcd4524dd7e7',
             'counter' => 'new-counter',
         ]);
@@ -45,7 +45,7 @@ class LoggerFeatureTest extends TestCase
 
     public function test_parameter_overruling()
     {
-        $logger = new Logger($this->guzzle, [
+        $logger = new Client($this->guzzle, [
             'base_uri' => 'https://blue-1.net',
             'uuid' => '22222222-b2ac-4ae4-9381-dcd4524dd7e7',
             'api_version' => 'v1',
@@ -66,7 +66,7 @@ class LoggerFeatureTest extends TestCase
 
     public function test_get_params()
     {
-        $logger = new Logger($this->guzzle, [
+        $logger = new Client($this->guzzle, [
             'uuid' => '22222222-b2ac-4ae4-9381-dcd4524dd7e7',
             'counter' => 'test.counter',
             'client_id' => 'some-id',
@@ -82,7 +82,7 @@ class LoggerFeatureTest extends TestCase
 
     public function test_async_methods()
     {
-        $logger = new Logger($this->guzzle, [
+        $logger = new Client($this->guzzle, [
             'uuid' => '5b8c58e9-b2ac-4ae4-9381-dcd4524dd7e7',
             'counter' => 'new-counter',
         ]);
@@ -92,7 +92,7 @@ class LoggerFeatureTest extends TestCase
 
     public function test_missing_app_uuid_throws_exception()
     {
-        $logger = new Logger($this->guzzle);
+        $logger = new Client($this->guzzle);
 
         $this->expectException(ClientException::class);
 
@@ -101,7 +101,7 @@ class LoggerFeatureTest extends TestCase
 
     public function test_wrong_app_uuid_throws_exception()
     {
-        $logger = new Logger($this->guzzle, [
+        $logger = new Client($this->guzzle, [
             'uuid' => '5b8c58e9-b2ac-0ae4-9381-dcd4524dd7e7',
         ]);
 
@@ -112,7 +112,7 @@ class LoggerFeatureTest extends TestCase
 
     public function test_missing_counter_throws_exception()
     {
-        $logger = new Logger($this->guzzle, [
+        $logger = new Client($this->guzzle, [
             'uuid' => '5b8c58e9-b2ac-4ae4-9381-dcd4524dd7e7',
         ]);
 
@@ -123,7 +123,7 @@ class LoggerFeatureTest extends TestCase
 
     public function test_wrong_counter_throws_exception()
     {
-        $logger = new Logger($this->guzzle, [
+        $logger = new Client($this->guzzle, [
             'uuid' => '5b8c58e9-b2ac-4ae4-9381-dcd4524dd7e7',
             'counter' => 'new.counter."',
         ]);

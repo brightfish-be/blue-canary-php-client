@@ -24,7 +24,7 @@ use Psr\Log\LoggerInterface;
  * @copyright 2019 Brightfish
  * @author Arnaud Coolsaet <a.coolsaet@brightfish.be>
  */
-class Logger extends Client implements LoggerInterface
+abstract class AbstractLogger implements LoggerInterface
 {
     /** @var array */
     const LEVELS = [
@@ -44,7 +44,7 @@ class Logger extends Client implements LoggerInterface
     /**
      * Determines the minimum level a message must be in order to be logged.
      * @param string|int $level
-     * @return Logger
+     * @return AbstractLogger
      */
     public function setLevel($level): self
     {
@@ -59,7 +59,6 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws ClientException
-     * @throws GuzzleException
      */
     public function emergency($message = '', array $parameters = [])
     {
@@ -74,7 +73,6 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws ClientException
-     * @throws GuzzleException
      */
     public function alert($message = '', array $parameters = [])
     {
@@ -88,7 +86,6 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws ClientException
-     * @throws GuzzleException
      */
     public function critical($message = '', array $parameters = [])
     {
@@ -102,7 +99,6 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws ClientException
-     * @throws GuzzleException
      */
     public function error($message = '', array $parameters = [])
     {
@@ -117,7 +113,6 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws ClientException
-     * @throws GuzzleException
      */
     public function warning($message = '', array $parameters = [])
     {
@@ -130,7 +125,6 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws ClientException
-     * @throws GuzzleException
      */
     public function notice($message = '', array $parameters = [])
     {
@@ -144,7 +138,6 @@ class Logger extends Client implements LoggerInterface
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface
      * @throws ClientException
-     * @throws GuzzleException
      */
     public function info($message = '', array $parameters = [])
     {
@@ -187,8 +180,6 @@ class Logger extends Client implements LoggerInterface
      * @param string $message
      * @param array $parameters
      * @return ResponseInterface|PromiseInterface|void
-     * @throws ClientException
-     * @throws GuzzleException
      */
     protected function handleRequest(string $name, string $message, array $parameters)
     {

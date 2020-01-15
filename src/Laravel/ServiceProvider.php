@@ -2,7 +2,7 @@
 
 namespace Brightfish\BlueCanary\Laravel;
 
-use Brightfish\BlueCanary\Logger;
+use Brightfish\BlueCanary\Client;
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 /**
@@ -20,7 +20,7 @@ class ServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->app->singleton('blue-canary', function () {
-            return new Logger($this->app);
+            return new Client($this->app);
         });
     }
 }

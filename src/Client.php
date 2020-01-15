@@ -3,9 +3,7 @@
 namespace Brightfish\BlueCanary;
 
 use Brightfish\BlueCanary\Exceptions\ClientException;
-use Brightfish\BlueCanary\Exceptions\MetricException;
 use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Psr7\Request;
 use Psr\Http\Message\RequestInterface;
@@ -17,7 +15,7 @@ use Psr\Http\Message\ResponseInterface;
  * @copyright 2019 Brightfish
  * @author Arnaud Coolsaet <a.coolsaet@brightfish.be>
  */
-class Client
+class Client extends AbstractLogger implements BlueCanaryInterface
 {
     /** @var ClientInterface */
     protected $guzzle;
@@ -54,11 +52,7 @@ class Client
      */
     protected $metrics = [];
 
-    /**
-     * Merge parameters with default, set initial uri parts.
-     * @param ClientInterface $guzzle
-     * @param array $parameters
-     */
+    /** {@inheritDoc} */
     public function __construct(ClientInterface $guzzle, array $parameters = [])
     {
         $this->guzzle = $guzzle;
@@ -68,16 +62,8 @@ class Client
         $this->setUri($this->parameters);
     }
 
-    /**
-     * Add a metric for the next request.
-     * @param string|Metric $key
-     * @param float $value
-     * @param string $unit
-     * @param string $cast
-     * @return Client
-     * @throws MetricException
-     */
-    public function metric($key, float $value = 0, ?string $unit = null, string $cast = 'float'): self
+    /** {@inheritDoc} */
+    public function metric($key, float $value = 0, ?string $unit = null, string $cast = 'float'): BlueCanaryInterface
     {
         $this->metrics[] = $key instanceof Metric ? $key : new Metric($key, $value, $unit, $cast);
 
@@ -89,7 +75,6 @@ class Client
      * @param array $parameters
      * @return PromiseInterface|ResponseInterface
      * @throws ClientException
-     * @throws GuzzleException
      */
     protected function request(array $parameters)
     {
@@ -99,13 +84,22 @@ class Client
 
         $this->clearMetrics();
 
-        if (empty($parameters['async'])) {
-            return $this->guzzle->send($request, $guzzleOptions);
+        # Catch Guzzle exception to prevent them from bubbling up to
+        # the dependent application, and (infinitely) be rethrown.
+        try {
+            if (empty($parameters['async'])) {
+                return $this->guzzle->send($request, $guzzleOptions);
+            }
+
+            unset($parameters['async']);
+
+            return $this->guzzle->sendAsync($request, $guzzleOptions);
+        } catch (\Throwable $e) {
+            if (function_exists('logger')) {
+                logger($e->getMessage() . PHP_EOL . $e->getTraceAsString());
+            }
+            return null;
         }
-
-        unset($parameters['async']);
-
-        return $this->guzzle->sendAsync($request, $guzzleOptions);
     }
 
     /**
@@ -154,11 +148,7 @@ class Client
         return \GuzzleHttp\json_encode($this->getParameters($parameters));
     }
 
-    /**
-     * Trim and cast parameters.
-     * @param array $parameters
-     * @return array
-     */
+    /** {@inheritDoc} */
     public function getParameters(array $parameters): array
     {
         $parameters = array_intersect_key($parameters, array_flip($this->allowedDataKeys));
@@ -192,10 +182,7 @@ class Client
         return $this;
     }
 
-    /**
-     * Return the API URL, while optionally validating its parts.
-     * @return string
-     */
+    /** {@inheritDoc} */
     public function getUri(): string
     {
         $uri = implode('/', $this->uri);
@@ -231,21 +218,13 @@ class Client
         return $this;
     }
 
-    /**
-     * Regex-check if the given string is a valid UUID.
-     * @param string $uuid
-     * @return bool
-     */
+    /** {@inheritDoc} */
     public function isUuidValid(string $uuid): bool
     {
         return preg_match('/^[0-9A-F]{8}-[0-9A-F]{4}-4[0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9A-F]{12}$/i', $uuid);
     }
 
-    /**
-     * Regex-check if the given string is a valid counter name.
-     * @param string $name
-     * @return bool
-     */
+    /** {@inheritDoc} */
     public function isCounterNameValid(string $name): bool
     {
         return preg_match('/^[a-z0-9\-_.]{6,255}$/i', $name);
@@ -255,7 +234,7 @@ class Client
      * Return the most apt HTTP method for current request.
      * @return string
      */
-    public function getMethod(): string
+    protected function getMethod(): string
     {
         return $this->metrics ? 'POST' : 'GET';
     }
@@ -272,10 +251,7 @@ class Client
         }, ARRAY_FILTER_USE_KEY);
     }
 
-    /**
-     * Return all currently stashed metrics.
-     * @return Metric[]
-     */
+    /** {@inheritDoc} */
     public function getMetrics(): array
     {
         return $this->metrics;
