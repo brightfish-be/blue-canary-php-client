@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use Brightfish\BlueCanary\Exceptions\ClientException;
 use Brightfish\BlueCanary\Client;
+use Brightfish\BlueCanary\Exceptions\ClientException;
 use Brightfish\BlueCanary\Metric;
 use GuzzleHttp\Promise\Promise;
 use Tests\TestCase;

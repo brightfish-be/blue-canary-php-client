@@ -98,6 +98,7 @@ class Client extends AbstractLogger implements BlueCanaryInterface
             if (function_exists('logger')) {
                 logger($e->getMessage() . PHP_EOL . $e->getTraceAsString());
             }
+
             return null;
         }
     }

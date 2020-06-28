@@ -185,7 +185,9 @@ abstract class AbstractLogger implements LoggerInterface
     {
         $level = self::LEVELS[$name];
 
-        if ($this->minLevel < $level) return;
+        if ($this->minLevel < $level) {
+            return;
+        }
 
         $parameters = array_merge($parameters, [
             'status_code' => $level,

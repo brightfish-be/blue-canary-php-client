@@ -25,7 +25,8 @@
     },
     "require-dev": {
         "ext-json": "*",
-        "phpunit/phpunit": "^8.5"
+        "phpunit/phpunit": "^8.5",
+        "friendsofphp/php-cs-fixer": "^2.16"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
@@ -40,6 +41,7 @@
         }
     },
     "scripts": {
-        "test": "vendor/bin/phpunit --colors=always tests"
+        "test": "vendor/bin/phpunit --colors=always tests",
+        "style": "vendor/bin/php-cs-fixer fix --allow-risky=yes"
     }
 }
